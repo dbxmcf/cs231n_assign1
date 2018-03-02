@@ -29,16 +29,21 @@ def svm_loss_naive(W, X, y, reg):
   
   for i in xrange(num_train):
     scores = X[i].dot(W)
+
+    #print X[i].shape, W.shape
     correct_class_score = scores[y[i]]
-    dW[i,i] = 0
+
     for j in xrange(num_classes):
       if j == y[i]:
         continue
       margin = scores[j] - correct_class_score + 1 # note delta = 1
+      #if i==499:
+      #  print 'margin[',499,']=',margin
       if margin > 0:
         loss += margin
-        dW[i,j]  = X[i,j]
-        dW[i,i] += -X[i,j]
+        # print dW[j].shape, X[i].T.shape
+        dW[:,j] += X[i].T
+        dW[:,y[i]] += -X[i].T
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
@@ -55,7 +60,7 @@ def svm_loss_naive(W, X, y, reg):
   # loss is being computed. As a result you may need to modify some of the    #
   # code above to compute the gradient.                                       #
   #############################################################################
-
+  dW /= num_train
 
   return loss, dW
 
@@ -74,7 +79,17 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  score = X.dot(W)
+  idx_x = xrange(num_train)
+  correct_class_score = score[idx_x, y].reshape(num_train,-1)
+  margin = score - correct_class_score + 1
+  #print margin.shape
+  margin[idx_x,y] = 0.0
+  mask = margin>0
+  loss = np.sum(margin[mask])/num_train
+  loss += reg * np.sum(W * W)
+  #pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -89,7 +104,20 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  pass
+  
+  margin1 = mask.astype(int)
+  #print margin1.shape
+  #dW = (X.T).dot(margin1)
+  #print dW.shape
+  #a = np.sum(dW,axis=1)
+  #print a.shape
+  #idx_d = np.array(xrange(W.shape[0]))
+  #print idx_d
+  msum = margin1.sum(axis=1)
+  margin1[idx_x,y] = -msum
+  dW = (X.T).dot(margin1)
+  dW /= num_train
+  #pass
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################

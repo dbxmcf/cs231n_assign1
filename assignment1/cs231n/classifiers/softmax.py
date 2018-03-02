@@ -22,7 +22,8 @@ def softmax_loss_naive(W, X, y, reg):
   """
   # Initialize the loss and gradient to zero.
   loss = 0.0
-  dW = np.zeros_like(W)
+  #dW = np.zeros_like(W)
+  dW = np.zeros(W.shape)
 
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using explicit loops.     #
@@ -30,7 +31,31 @@ def softmax_loss_naive(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  # compute the loss and the gradient
+  num_classes = W.shape[1]
+  num_train = X.shape[0]
+  loss = 0.0
+  for i in xrange(num_train):
+    scores = X[i].dot(W)
+    scores -= np.max(scores)
+    sum_exp_scores = np.sum(np.exp(scores))
+    
+    correct_class_score = scores[y[i]]
+    p = np.exp(correct_class_score)/sum_exp_scores
+    
+    loss += -np.log(p)
+    for j in xrange(num_classes):
+      frac_exp = np.exp(scores[j])/sum_exp_scores
+      if j==y[i]:
+        dW[:,j] += (-1.0 + frac_exp)*X[i].T
+      else:
+        dW[:,j] += frac_exp*X[i].T
+      
+  loss /= num_train
+  loss += reg * np.sum(W * W)
+        
+  dW /= num_train  
+  # pass
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -54,7 +79,30 @@ def softmax_loss_vectorized(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_classes = W.shape[1]
+  num_train = X.shape[0]
+  #loss = 0.0
+  scores = X.dot(W)
+  scores -= np.max(scores,axis=1).reshape(num_train,-1)
+  sum_exp_scores = np.sum(np.exp(scores),axis=1) #.reshape(num_train,-1)
+  #print sum_exp_scores.shape
+  idx_x = xrange(num_train)
+  correct_class_score = scores[idx_x,y]
+  #print correct_class_score.shape
+  p = np.exp(correct_class_score)/sum_exp_scores
+  
+  loss = np.sum(-np.log(p))
+  loss /= num_train
+  loss += reg * np.sum(W * W)
+
+  frac_exp = np.exp(scores)/sum_exp_scores.reshape(num_train,-1)
+  frac_exp[idx_x,y] += -1 
+  # print frac_exp.shape
+  dW = (X.T).dot(frac_exp)
+  dW /= num_train
+  
+    
+  #pass
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
