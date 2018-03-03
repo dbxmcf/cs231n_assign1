@@ -128,7 +128,7 @@ class TwoLayerNet(object):
     grads['W2'] = dW2/N
     db2 = np.sum(dscores.T,axis=1)
     grads['b2'] = db2/N
-    print 'b2 now'
+    print('b2 now')
     #df1h1 = f1[f1>0].astype(int)
     #dW1 = dscores.dot(W2.T) * df1h1 #* X.T
     #grads['W1'] = dW1
