@@ -124,7 +124,7 @@ class TwoLayerNet(object):
     dscores[idx_x,y] += -1 
     #dscores = frac_exp
     #print(f1.shape)
-    dW2 = (h1.T).dot(dscores)
+    dW2 = (f1.T).dot(dscores)
     grads['W2'] = dW2/N
     db2 = np.sum(dscores.T,axis=1)
     grads['b2'] = db2/N
