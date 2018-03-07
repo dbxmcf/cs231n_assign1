@@ -117,6 +117,7 @@ def svm_loss_vectorized(W, X, y, reg):
   margin1[idx_x,y] = -msum
   dW = (X.T).dot(margin1)
   dW /= num_train
+  dW += 2.0*reg*W
   #pass
   #############################################################################
   #                             END OF YOUR CODE                              #

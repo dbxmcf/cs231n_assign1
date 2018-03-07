@@ -79,6 +79,7 @@ class TwoLayerNet(object):
     #############################################################################
     h1 = X.dot(W1) + b1
     f1 = np.maximum(h1, 0, h1) # ReLU
+    #print('f1 shape',f1.shape)
     scores = f1.dot(W2) + b2
     #scores -= np.max(scores,axis=1).reshape(N,-1)
     #############################################################################
@@ -99,8 +100,6 @@ class TwoLayerNet(object):
     #############################################################################
     scores_scale = scores - np.max(scores,axis=1).reshape(N,-1)
     sum_exp_scores = np.sum(np.exp(scores_scale),axis=1) #.reshape(num_train,-1)
-    #scores_scale = scores - np.max(scores,axis=1).reshape(N,-1)
-    #sum_exp_scores = np.sum(np.exp(scores),axis=1) #.reshape(num_train,-1)
     idx_x = xrange(N)
     correct_class_score = scores_scale[idx_x,y]
     #correct_class_score = scores[idx_x,y]
@@ -122,18 +121,17 @@ class TwoLayerNet(object):
     #############################################################################
     dscores = np.exp(scores_scale)/sum_exp_scores.reshape(N,-1)
     dscores[idx_x,y] += -1 
-    #dscores = frac_exp
-    #print(f1.shape)
     dW2 = (f1.T).dot(dscores)
-    grads['W2'] = dW2/N
+    grads['W2'] = dW2/N + 2.0*reg*W2
     db2 = np.sum(dscores.T,axis=1)
-    grads['b2'] = db2/N
+    grads['b2'] = db2/N 
     dscores_df1 = W2.T
     df1_dh1 = (f1>0).astype(int)
     dh1_dW1 = X.T
-    dW1 = dh1_dW1.dot((dscores.dot(dscores_df1)) * (df1_dh1))
-    grads['W1'] = dW1/N
-    db1 = np.sum(((dscores.dot(dscores_df1)) * df1_dh1).T,axis=1)
+    dscore_dh1 = (dscores.dot(dscores_df1)) * (df1_dh1)
+    dW1 = dh1_dW1.dot(dscore_dh1)
+    grads['W1'] = dW1/N + 2.0*reg*W1
+    db1 = np.sum(dscore_dh1.T,axis=1)
     grads['b1'] = db1/N
     #pass
     #############################################################################
@@ -179,7 +177,10 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      indices = np.random.choice(num_train, size=batch_size, replace=True)
+      X_batch = X[indices]
+      y_batch = y[indices]
+      #pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -194,7 +195,11 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      self.params['W1'] += -learning_rate * grads['W1'] 
+      self.params['b1'] += -learning_rate * grads['b1'] 
+      self.params['W2'] += -learning_rate * grads['W2'] 
+      self.params['b2'] += -learning_rate * grads['b2'] 
+      #pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -239,7 +244,11 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    h1 = X.dot(self.params['W1']) + self.params['b1']
+    f1 = np.maximum(h1, 0, h1) # ReLU
+    scores = f1.dot(self.params['W2']) + self.params['b2']
+    y_pred = np.argmax(scores, axis = 1)
+    #pass
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################

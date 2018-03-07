@@ -100,6 +100,7 @@ def softmax_loss_vectorized(W, X, y, reg):
   # print frac_exp.shape
   dW = (X.T).dot(frac_exp)
   dW /= num_train
+  dW += 2*reg*W
   
     
   #pass
