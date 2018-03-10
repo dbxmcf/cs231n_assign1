@@ -61,6 +61,7 @@ def svm_loss_naive(W, X, y, reg):
   # code above to compute the gradient.                                       #
   #############################################################################
   dW /= num_train
+  dW += 2.0*reg*W
 
   return loss, dW
 
