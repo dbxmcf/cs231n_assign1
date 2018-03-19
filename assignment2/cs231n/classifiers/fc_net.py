@@ -85,7 +85,7 @@ class TwoLayerNet(object):
         # affine_forward(x, w, b)
         #z1 = X.dot(self.params['W1']) + self.params['b1']
         a1, cache = affine_relu_forward(X, self.params['W1'], self.params['b1'])
-        
+        scores, _ = affine_forward(a1, self.params['W2'], self.params['b2'])
         #dx, dw, db = affine_relu_backward(dout, cache)
         #loss, dx = softmax_loss(x, y)
         #pass
