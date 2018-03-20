@@ -198,7 +198,7 @@ class FullyConnectedNet(object):
             #out_dim = all_dims[idx+1]
             self.params[strW] = weight_scale * np.random.randn(in_dim, out_dim)
             self.params[strb] = np.zeros(out_dim)
-            print strW, strb, self.params[strW].shape, self.params[strb].shape
+            #print strW, strb, self.params[strW].shape, self.params[strb].shape
         #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -283,6 +283,8 @@ class FullyConnectedNet(object):
         
         strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
         Wf, bf = self.params[strW], self.params[strb]
+        W.append(Wf)
+        b.append(bf)
         #print Wf.shape, bf.shape
         scores, cache_l = affine_forward(a[self.num_layers-1], Wf, bf)
         cache.append(cache_l)
@@ -315,13 +317,18 @@ class FullyConnectedNet(object):
         reg_loss = 0.0
         for wl in W:
             reg_loss += np.sum(wl*wl)
+        
+        #print 'reg_loss=', reg_loss
         loss += 0.5*reg*reg_loss
         
+        # last layer
         da_l,dW_l,db_l = affine_backward(dscores, cache_l)
-        grads[strW] = dW_l #+ reg*Wf
+        grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
-        #for l in xrange(self.num_layers,1,-1):
-        #    da_l,dW_l,db_l = affine_relu_backward(da_l, cache_l)
+        
+        for l in xrange(self.num_layers-1,1,-1):
+            print 'l=',l
+            da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l])
             
         #da1, dW2, db2 = affine_backward(dscores, cache2)
         #grads['W2'] = dW2 + reg*W2
