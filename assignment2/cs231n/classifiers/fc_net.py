@@ -188,16 +188,17 @@ class FullyConnectedNet(object):
         # beta2, etc. Scale parameters should be initialized to one and shift      #
         # parameters should be initialized to zero.                                #
         ############################################################################
-        for idx, hd in enumerate(hidden_dims):
-            strW = 'W' + str(idx)
-            strb = 'b' + str(idx)
-            self.params[strW] = weight_scale * np.random.randn(hd, hidden_dim)
-            self.params[strb] = weight_scale * np.random.randn(hd, hidden_dim)
-        #for l in xrange(self.num_layers):
-        #    self.params['W1'] = weight_scale * np.random.randn(input_dim, hidden_dim)
-        #    self.params['b1'] = np.zeros(hidden_dim)
-        #    self.params['W2'] = weight_scale * np.random.randn(hidden_dim, num_classes)
-        #    self.params['b2'] = np.zeros(num_classes)
+        in_dims = [input_dim] + hidden_dims
+        out_dims = hidden_dims + [num_classes]
+        #all_dims = [input_dim] + hidden_dims + [num_classes]
+        for idx,(in_dim,out_dim) in enumerate(zip(in_dims,out_dims)):
+            strW = 'W' + str(idx+1)
+            strb = 'b' + str(idx+1)
+            
+            #out_dim = all_dims[idx+1]
+            self.params[strW] = weight_scale * np.random.randn(in_dim, out_dim)
+            self.params[strb] = np.zeros(out_dim)
+            print strW, strb, self.params[strW].shape, self.params[strb].shape
         #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -256,7 +257,37 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
-        pass
+        #reg = self.reg
+        
+        #W1, b1 = self.params['W1'], self.params['b1']
+        #W2, b2 = self.params['W2'], self.params['b2']
+        #reg = self.reg
+        #a1, cache1 = affine_relu_forward(X, W1, b1)
+        #scores, cache2 = affine_forward(a1, W2, b2)
+        
+        W =[]
+        b =[]
+        h =[]
+        a =[]
+        cache =[]
+        a.append(X)
+        for l in xrange(1,self.num_layers):
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            Wl, bl = self.params[strW], self.params[strb]
+            al, cachel = affine_relu_forward(a[l-1], Wl, bl)
+            W.append(Wl)
+            b.append(bl)
+            a.append(al)
+            cache.append(cachel)
+            #print strW, strb, al.shape
+        
+        strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
+        Wf, bf = self.params[strW], self.params[strb]
+        #print Wf.shape, bf.shape
+        scores, cache_l = affine_forward(a[self.num_layers-1], Wf, bf)
+        cache.append(cache_l)
+        #print scores.shape
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -279,7 +310,26 @@ class FullyConnectedNet(object):
         # automated tests, make sure that your L2 regularization includes a factor #
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
-        pass
+        loss, dscores = softmax_loss(scores, y)
+        reg = self.reg
+        reg_loss = 0.0
+        for wl in W:
+            reg_loss += np.sum(wl*wl)
+        loss += 0.5*reg*reg_loss
+        
+        da_l,dW_l,db_l = affine_backward(dscores, cache_l)
+        grads[strW] = dW_l #+ reg*Wf
+        grads[strb] = db_l
+        #for l in xrange(self.num_layers,1,-1):
+        #    da_l,dW_l,db_l = affine_relu_backward(da_l, cache_l)
+            
+        #da1, dW2, db2 = affine_backward(dscores, cache2)
+        #grads['W2'] = dW2 + reg*W2
+        #grads['b2'] = db2
+        #dX,  dW1, db1 = affine_relu_backward(da1, cache1)
+        #grads['W1'] = dW1 + reg*W1
+        #grads['b1'] = db1
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
