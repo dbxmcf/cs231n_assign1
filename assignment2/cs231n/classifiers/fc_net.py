@@ -272,6 +272,7 @@ class FullyConnectedNet(object):
         cache =[]
         a.append(X)
         for l in xrange(1,self.num_layers):
+            #print "l=",l
             strW, strb = 'W' + str(l), 'b' + str(l)
             Wl, bl = self.params[strW], self.params[strb]
             al, cachel = affine_relu_forward(a[l-1], Wl, bl)
@@ -280,14 +281,14 @@ class FullyConnectedNet(object):
             a.append(al)
             cache.append(cachel)
             #print strW, strb, al.shape
-        
+        #print "self.num_layers",self.num_layers
         strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
         Wf, bf = self.params[strW], self.params[strb]
         W.append(Wf)
         b.append(bf)
         #print Wf.shape, bf.shape
         scores, cache_l = affine_forward(a[self.num_layers-1], Wf, bf)
-        cache.append(cache_l)
+        #cache.append(cache_l)
         #print scores.shape
         #pass
         ############################################################################
@@ -326,9 +327,12 @@ class FullyConnectedNet(object):
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
         
-        for l in xrange(self.num_layers-1,1,-1):
-            print 'l=',l
-            da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l])
+        for l in xrange(self.num_layers-1,0,-1):
+            #print 'l=',l
+            da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            grads[strW] = dW_l + reg*W[l-1]
+            grads[strb] = db_l
             
         #da1, dW2, db2 = affine_backward(dscores, cache2)
         #grads['W2'] = dW2 + reg*W2
