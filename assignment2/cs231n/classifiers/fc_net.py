@@ -287,7 +287,7 @@ class FullyConnectedNet(object):
         W.append(Wf)
         b.append(bf)
         #print Wf.shape, bf.shape
-        scores, cache_l = affine_forward(a[self.num_layers-1], Wf, bf)
+        scores, cachel = affine_forward(a[self.num_layers-1], Wf, bf)
         #cache.append(cache_l)
         #print scores.shape
         #pass
@@ -323,7 +323,7 @@ class FullyConnectedNet(object):
         loss += 0.5*reg*reg_loss
         
         # last layer
-        da_l,dW_l,db_l = affine_backward(dscores, cache_l)
+        da_l,dW_l,db_l = affine_backward(dscores, cachel)
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
         
