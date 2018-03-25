@@ -105,7 +105,15 @@ def rmsprop(x, dx, config=None):
     # in the next_x variable. Don't forget to update cache value stored in    #
     # config['cache'].                                                        #
     ###########################################################################
-    pass
+    cache = config.get('cache', np.zeros_like(x))
+    #cache = config['x']
+    decay_rate = config['decay_rate']
+    eps = config['epsilon']
+    learning_rate = config['learning_rate']
+    cache = decay_rate * cache + (1.0-decay_rate)*dx**2
+    next_x = x - learning_rate * dx / (np.sqrt(cache) + eps)
+    config['cache'] = cache
+    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -142,7 +150,26 @@ def adam(x, dx, config=None):
     # the next_x variable. Don't forget to update the m, v, and t variables   #
     # stored in config.                                                       #
     ###########################################################################
-    pass
+    #m = config.get('m', np.zeros_like(x))
+    #v = config.get('v', np.zeros_like(x))
+    m = config['m']
+    v = config['v']
+    t = config['t'] + 1
+    #print 't=',t
+    beta1 = config['beta1']
+    beta2 = config['beta2']
+    eps = config['epsilon']
+    learning_rate = config['learning_rate']
+    
+    m = beta1*m + (1-beta1)*dx
+    v = beta2*v + (1-beta2)*dx*dx
+    first_unbias  = m/(1-beta1**t)
+    second_unbias = v/(1-beta2**t)
+    next_x = x - learning_rate * first_unbias /(np.sqrt(second_unbias) + eps)
+    config['m'] = m
+    config['v'] = v
+    config['t'] = t 
+    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
