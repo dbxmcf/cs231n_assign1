@@ -167,6 +167,10 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     N, D = x.shape
     running_mean = bn_param.get('running_mean', np.zeros(D, dtype=x.dtype))
     running_var = bn_param.get('running_var', np.zeros(D, dtype=x.dtype))
+    
+    #print 'mode=', mode
+    #print 'running_mean=', running_mean
+    #print 'running_var=', running_var
 
     out, cache = None, None
     if mode == 'train':
@@ -185,7 +189,18 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # variance, storing your result in the running_mean and running_var   #
         # variables.                                                          #
         #######################################################################
-        pass
+        
+        sample_mean = np.mean(x,axis=0)
+        sample_var = np.var(x,axis=0)
+        #print running_mean, running_var
+        sample_std = np.sqrt(sample_var + eps)
+        xh = (x - sample_mean) / sample_std
+        out = gamma * xh + beta
+        cache = x, xh, gamma, beta, sample_std, sample_mean
+        
+        running_mean = momentum * running_mean + (1 - momentum) * sample_mean
+        running_var = momentum * running_var + (1 - momentum) * sample_var
+        #pass
         #######################################################################
         #                           END OF YOUR CODE                          #
         #######################################################################
@@ -196,7 +211,11 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # then scale and shift the normalized data using gamma and beta.      #
         # Store the result in the out variable.                               #
         #######################################################################
-        pass
+        
+        unbiased_std = np.sqrt(running_var + eps)
+        out = gamma/unbiased_std*x + (beta - gamma*running_mean/unbiased_std)
+        #cache = x, gamma, beta
+        #pass
         #######################################################################
         #                          END OF YOUR CODE                           #
         #######################################################################
@@ -232,7 +251,13 @@ def batchnorm_backward(dout, cache):
     # TODO: Implement the backward pass for batch normalization. Store the    #
     # results in the dx, dgamma, and dbeta variables.                         #
     ###########################################################################
-    pass
+    x, xh, gamma, beta, sample_std, sample_mean = cache
+    #print sample_std.shape
+    dx = dout * gamma / sample_std
+    dgamma = dout*xh
+    print dgamma.shape
+    dbeta = dout
+    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -262,7 +287,7 @@ def batchnorm_backward_alt(dout, cache):
     # should be able to compute gradients with respect to the inputs in a     #
     # single statement; our implementation fits on a single 80-character line.#
     ###########################################################################
-    pass
+    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
