@@ -214,7 +214,6 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         
         unbiased_std = np.sqrt(running_var + eps)
         out = gamma/unbiased_std*x + (beta - gamma*running_mean/unbiased_std)
-        #cache = x, gamma, beta
         #pass
         #######################################################################
         #                          END OF YOUR CODE                           #
@@ -252,11 +251,22 @@ def batchnorm_backward(dout, cache):
     # results in the dx, dgamma, and dbeta variables.                         #
     ###########################################################################
     x, xh, gamma, beta, sample_std, sample_mean = cache
+    #print x.shape
     #print sample_std.shape
-    dx = dout * gamma / sample_std
-    dgamma = dout*xh
-    print dgamma.shape
-    dbeta = dout
+    #print dout.shape
+    #print gamma.shape
+    dxh = dout * gamma
+    dsample_var = np.sum(dxh*(x-sample_mean)*(-0.5)*sample_std**(-3),axis=0)
+    m = x.shape[0]
+    #print m
+    dsample_mean = np.sum(dxh*(-1/sample_std),axis=0) + dsample_var/m*np.sum(-2*(x-sample_mean),axis=0)
+    
+    dx = dout*gamma/sample_std + dsample_var*2*(x-sample_mean)/m + dsample_mean/m
+    #dx = dout * sample_std.T
+    dgamma = np.sum(dout*xh,axis=0)
+    #print dgamma.shape
+    dbeta = np.sum(dout,axis=0)
+    #print dbeta.shape
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -287,6 +297,12 @@ def batchnorm_backward_alt(dout, cache):
     # should be able to compute gradients with respect to the inputs in a     #
     # single statement; our implementation fits on a single 80-character line.#
     ###########################################################################
+    x, xh, gamma, beta, sample_std, sample_mean = cache
+    dxh = dout * gamma
+    m = x.shape[0]
+    dx = dxh/sample_std*(1.0-1.0/m-2.0/m*sample_std**(-2)*(x-sample_mean)**2)
+    dgamma = np.sum(dout*xh,axis=0)
+    dbeta = np.sum(dout,axis=0)
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
