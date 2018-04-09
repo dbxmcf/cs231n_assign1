@@ -300,7 +300,13 @@ def batchnorm_backward_alt(dout, cache):
     x, xh, gamma, beta, sample_std, sample_mean = cache
     dxh = dout * gamma
     m = x.shape[0]
-    dx = dxh/sample_std*(1.0-1.0/m-2.0/m*sample_std**(-2)*(x-sample_mean)**2)
+    dsample_var = (-0.5)*sample_std**(-3)*np.sum(dxh*(x-sample_mean),axis=0)
+    dx = 1.0/sample_std*(dxh-1.0/m*dxh.sum(axis=0)) + dsample_var*2/m*(x-sample_mean)
+    
+    #dx = 1.0/sample_std*(dxh-1.0/m*dxh.sum(axis=0)) - (x-sample_mean)/m*sample_std**(-3)*np.sum(dxh*(x-sample_mean),axis=0)  
+    
+    #dx = dxh/sample_std*(1.0-1.0/m-2.0/m*sample_std**(-2)*(x-sample_mean)**2)
+    #dx = 1.0/sample_std*(dxh-1.0/m*np.sum(dxh,axis=0))-(x-sample_mean)/m*sample_std**(-1.5)*np.sum(dxh*(x-sample_mean),axis=0)
     dgamma = np.sum(dout*xh,axis=0)
     dbeta = np.sum(dout,axis=0)
     #pass
