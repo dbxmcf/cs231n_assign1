@@ -327,27 +327,29 @@ class FullyConnectedNet(object):
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
         
-        for l in xrange(self.num_layers-1,0,-1):
-            #print 'l=',l
-            da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
-            strW, strb = 'W' + str(l), 'b' + str(l)
-            grads[strW] = dW_l + reg*W[l-1]
-            grads[strb] = db_l
+        if self.use_batchnorm:
+            for l in xrange(self.num_layers-1,0,-1):
+                #print 'l=',l
+                da_l,dW_l,db_l = affine_bn_relu_backward(da_l, cache[l-1])
+                strW, strb = 'W' + str(l), 'b' + str(l)
+                grads[strW] = dW_l #+ reg*W[l-1]
+                grads[strb] = db_l            
+        else:
+            for l in xrange(self.num_layers-1,0,-1):
+                #print 'l=',l
+                da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
+                strW, strb = 'W' + str(l), 'b' + str(l)
+                grads[strW] = dW_l + reg*W[l-1]
+                grads[strb] = db_l
             
-        #da1, dW2, db2 = affine_backward(dscores, cache2)
-        #grads['W2'] = dW2 + reg*W2
-        #grads['b2'] = db2
-        #dX,  dW1, db1 = affine_relu_backward(da1, cache1)
-        #grads['W1'] = dW1 + reg*W1
-        #grads['b1'] = db1
-        #pass
+
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
 
         return loss, grads
 
-    def affine_bn_relu_forward(x, w, b, bn_param):
+    def affine_bn_relu_forward(x, w, b, gamma, beta, bn_param):
         """
         Convenience layer that perorms an affine transform followed by a ReLU
 
@@ -360,9 +362,9 @@ class FullyConnectedNet(object):
         - cache: Object to give to the backward pass
         """
         a, fc_cache = affine_forward(x, w, b)
-        out, bn_cache = batchnorm_forward(x, gamma, beta, bn_param):
-        out, relu_cache = relu_forward(a)
-        cache = (fc_cache, relu_cache)
+        an, bn_cache = batchnorm_forward(a, gamma, beta, bn_param):
+        out, relu_cache = relu_forward(an)
+        cache = (fc_cache, bn_cache, relu_cache)
         return out, cache
 
 
@@ -370,7 +372,8 @@ class FullyConnectedNet(object):
         """
             Backward pass for the affine-relu convenience layer
             """
-        fc_cache, relu_cache = cache
-        da = relu_backward(dout, relu_cache)
+        fc_cache, bn_cache, relu_cache = cache
+        dan = relu_backward(dout, relu_cache)
+        da, dgamma, dbeta = batchnorm_backward(dan, bn_cache)
         dx, dw, db = affine_backward(da, fc_cache)
-        return dx, dw, db
+        return dx, dw, db, dgamma, dbeta
