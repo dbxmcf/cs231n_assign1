@@ -200,6 +200,11 @@ class FullyConnectedNet(object):
             self.params[strb] = np.zeros(out_dim)
             #print strW, strb, self.params[strW].shape, self.params[strb].shape
         #pass
+            if self.use_batchnorm:
+                str_gamma = 'gamma' + str(idx+1)
+                str_beta = 'beta' + str(idx+1)
+                self.params[str_gamma] = 1.0
+                self.params[str_beta]  = 0.0
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -271,21 +276,38 @@ class FullyConnectedNet(object):
         a =[]
         cache =[]
         a.append(X)
-        for l in xrange(1,self.num_layers):
-            #print "l=",l
-            strW, strb = 'W' + str(l), 'b' + str(l)
-            Wl, bl = self.params[strW], self.params[strb]
-            al, cachel = affine_relu_forward(a[l-1], Wl, bl)
-            W.append(Wl)
-            b.append(bl)
-            a.append(al)
-            cache.append(cachel)
-            #print strW, strb, al.shape
-        #print "self.num_layers",self.num_layers
-        strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
-        Wf, bf = self.params[strW], self.params[strb]
-        W.append(Wf)
-        b.append(bf)
+        if self.use_batchnorm:
+            for l in xrange(1,self.num_layers):
+                #print "l=",l
+                strW, strb = 'W' + str(l), 'b' + str(l)
+                str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
+                Wl, bl = self.params[strW], self.params[strb]
+                gammal, betal = self.params[str_gamma], self.params[str_beta]
+                al, cachel = affine_bn_relu_forward(a[l-1], Wl, bl, gammal, betal, bn_param[l-1])
+                W.append(Wl)
+                b.append(bl)
+                a.append(al)
+                cache.append(cachel)
+            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
+            Wf, bf = self.params[strW], self.params[strb]
+            W.append(Wf)
+            b.append(bf)
+        else:
+            for l in xrange(1,self.num_layers):
+                #print "l=",l
+                strW, strb = 'W' + str(l), 'b' + str(l)
+                Wl, bl = self.params[strW], self.params[strb]
+                al, cachel = affine_relu_forward(a[l-1], Wl, bl)
+                W.append(Wl)
+                b.append(bl)
+                a.append(al)
+                cache.append(cachel)
+                #print strW, strb, al.shape
+            #print "self.num_layers",self.num_layers
+            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
+            Wf, bf = self.params[strW], self.params[strb]
+            W.append(Wf)
+            b.append(bf)
         #print Wf.shape, bf.shape
         scores, cachel = affine_forward(a[self.num_layers-1], Wf, bf)
         #cache.append(cache_l)
