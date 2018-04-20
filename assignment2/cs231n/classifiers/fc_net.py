@@ -200,11 +200,6 @@ class FullyConnectedNet(object):
             self.params[strb] = np.zeros(out_dim)
             #print strW, strb, self.params[strW].shape, self.params[strb].shape
         #pass
-            if self.use_batchnorm:
-                str_gamma = 'gamma' + str(idx+1)
-                str_beta = 'beta' + str(idx+1)
-                self.params[str_gamma] = 1.0
-                self.params[str_beta]  = 0.0
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -276,38 +271,21 @@ class FullyConnectedNet(object):
         a =[]
         cache =[]
         a.append(X)
-        if self.use_batchnorm:
-            for l in xrange(1,self.num_layers):
-                #print "l=",l
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
-                Wl, bl = self.params[strW], self.params[strb]
-                gammal, betal = self.params[str_gamma], self.params[str_beta]
-                al, cachel = affine_bn_relu_forward(a[l-1], Wl, bl, gammal, betal, bn_param[l-1])
-                W.append(Wl)
-                b.append(bl)
-                a.append(al)
-                cache.append(cachel)
-            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
-            Wf, bf = self.params[strW], self.params[strb]
-            W.append(Wf)
-            b.append(bf)
-        else:
-            for l in xrange(1,self.num_layers):
-                #print "l=",l
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                Wl, bl = self.params[strW], self.params[strb]
-                al, cachel = affine_relu_forward(a[l-1], Wl, bl)
-                W.append(Wl)
-                b.append(bl)
-                a.append(al)
-                cache.append(cachel)
-                #print strW, strb, al.shape
-            #print "self.num_layers",self.num_layers
-            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
-            Wf, bf = self.params[strW], self.params[strb]
-            W.append(Wf)
-            b.append(bf)
+        for l in xrange(1,self.num_layers):
+            #print "l=",l
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            Wl, bl = self.params[strW], self.params[strb]
+            al, cachel = affine_relu_forward(a[l-1], Wl, bl)
+            W.append(Wl)
+            b.append(bl)
+            a.append(al)
+            cache.append(cachel)
+            #print strW, strb, al.shape
+        #print "self.num_layers",self.num_layers
+        strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
+        Wf, bf = self.params[strW], self.params[strb]
+        W.append(Wf)
+        b.append(bf)
         #print Wf.shape, bf.shape
         scores, cachel = affine_forward(a[self.num_layers-1], Wf, bf)
         #cache.append(cache_l)
@@ -349,53 +327,22 @@ class FullyConnectedNet(object):
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
         
-        if self.use_batchnorm:
-            for l in xrange(self.num_layers-1,0,-1):
-                #print 'l=',l
-                da_l,dW_l,db_l = affine_bn_relu_backward(da_l, cache[l-1])
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                grads[strW] = dW_l #+ reg*W[l-1]
-                grads[strb] = db_l            
-        else:
-            for l in xrange(self.num_layers-1,0,-1):
-                #print 'l=',l
-                da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                grads[strW] = dW_l + reg*W[l-1]
-                grads[strb] = db_l
+        for l in xrange(self.num_layers-1,0,-1):
+            #print 'l=',l
+            da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            grads[strW] = dW_l + reg*W[l-1]
+            grads[strb] = db_l
             
-
+        #da1, dW2, db2 = affine_backward(dscores, cache2)
+        #grads['W2'] = dW2 + reg*W2
+        #grads['b2'] = db2
+        #dX,  dW1, db1 = affine_relu_backward(da1, cache1)
+        #grads['W1'] = dW1 + reg*W1
+        #grads['b1'] = db1
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
 
         return loss, grads
-
-    def affine_bn_relu_forward(x, w, b, gamma, beta, bn_param):
-        """
-        Convenience layer that perorms an affine transform followed by a ReLU
-
-        Inputs:
-        - x: Input to the affine layer
-        - w, b: Weights for the affine layer
-
-        Returns a tuple of:
-        - out: Output from the ReLU
-        - cache: Object to give to the backward pass
-        """
-        a, fc_cache = affine_forward(x, w, b)
-        an, bn_cache = batchnorm_forward(a, gamma, beta, bn_param):
-        out, relu_cache = relu_forward(an)
-        cache = (fc_cache, bn_cache, relu_cache)
-        return out, cache
-
-
-    def affine_bn_relu_backward(dout, cache):
-        """
-            Backward pass for the affine-relu convenience layer
-            """
-        fc_cache, bn_cache, relu_cache = cache
-        dan = relu_backward(dout, relu_cache)
-        da, dgamma, dbeta = batchnorm_backward(dan, bn_cache)
-        dx, dw, db = affine_backward(da, fc_cache)
-        return dx, dw, db, dgamma, dbeta
