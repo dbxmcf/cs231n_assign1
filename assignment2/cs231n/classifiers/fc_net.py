@@ -228,10 +228,11 @@ class FullyConnectedNet(object):
             self.params[strW] = weight_scale * np.random.randn(in_dim, out_dim)
             self.params[strb] = np.zeros(out_dim)
             #print strW, strb, self.params[strW].shape, self.params[strb].shape
-        #pass
-            if self.use_batchnorm:
+            # last layer does not have gamma and beta
+            if self.use_batchnorm and (idx < self.num_layers-1):
                 str_gamma = 'gamma' + str(idx+1)
                 str_beta = 'beta' + str(idx+1)
+                #print str_gamma, str_beta
                 self.params[str_gamma] = np.ones(out_dim)
                 self.params[str_beta]  = np.zeros(out_dim)
                 #print self.params[str_beta].shape
@@ -388,7 +389,8 @@ class FullyConnectedNet(object):
                 strW, strb = 'W' + str(l), 'b' + str(l)
                 str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
                 grads[strW] = dW_l + reg*W[l-1]
-                grads[strb] = db_l 
+                grads[strb] = db_l
+                #print str_gamma, str_beta
                 grads[str_gamma] = dgamma_l
                 grads[str_beta] = dbeta_l
                 #print grads[str_gamma].shape, grads[str_beta].shape
