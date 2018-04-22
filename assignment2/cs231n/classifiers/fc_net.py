@@ -234,7 +234,7 @@ class FullyConnectedNet(object):
                 str_beta = 'beta' + str(idx+1)
                 self.params[str_gamma] = np.ones(out_dim)
                 self.params[str_beta]  = np.zeros(out_dim)
-                print self.params[str_beta].shape
+                #print self.params[str_beta].shape
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -374,8 +374,6 @@ class FullyConnectedNet(object):
         reg_loss = 0.0
         for wl in W:
             reg_loss += np.sum(wl*wl)
-        
-        #print 'reg_loss=', reg_loss
         loss += 0.5*reg*reg_loss
         
         # last layer
@@ -389,7 +387,7 @@ class FullyConnectedNet(object):
                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
                 strW, strb = 'W' + str(l), 'b' + str(l)
                 str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
-                grads[strW] = dW_l
+                grads[strW] = dW_l + reg*W[l-1]
                 grads[strb] = db_l 
                 grads[str_gamma] = dgamma_l
                 grads[str_beta] = dbeta_l
