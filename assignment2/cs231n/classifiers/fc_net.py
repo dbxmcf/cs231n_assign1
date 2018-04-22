@@ -388,11 +388,12 @@ class FullyConnectedNet(object):
                 #print 'l=',l
                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
                 strW, strb = 'W' + str(l), 'b' + str(l)
+                str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
                 grads[strW] = dW_l
                 grads[strb] = db_l 
                 grads[str_gamma] = dgamma_l
                 grads[str_beta] = dbeta_l
-                print grads[str_gamma].shape, grads[str_beta].shape
+                #print grads[str_gamma].shape, grads[str_beta].shape
         else:
             for l in xrange(self.num_layers-1,0,-1):
                 #print 'l=',l
