@@ -325,11 +325,6 @@ class FullyConnectedNet(object):
                 gamma_list.append(gammal)
                 beta_list.append(betal)
                 cache.append(cachel)
-            # last layer
-            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
-            Wf, bf = self.params[strW], self.params[strb]
-            W.append(Wf)
-            b.append(bf)
         else:
             for l in xrange(1,self.num_layers):
                 #print "l=",l
@@ -341,12 +336,12 @@ class FullyConnectedNet(object):
                 a.append(al)
                 cache.append(cachel)
                 #print strW, strb, al.shape
-            #print "self.num_layers",self.num_layers
-            #last layer
-            strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
-            Wf, bf = self.params[strW], self.params[strb]
-            W.append(Wf)
-            b.append(bf)
+        #print "self.num_layers",self.num_layers
+        #last layer
+        strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
+        Wf, bf = self.params[strW], self.params[strb]
+        W.append(Wf)
+        b.append(bf)
         #print Wf.shape, bf.shape
         scores, cachel = affine_forward(a[self.num_layers-1], Wf, bf)
         #cache.append(cache_l)
@@ -397,6 +392,7 @@ class FullyConnectedNet(object):
                 grads[strb] = db_l 
                 grads[str_gamma] = dgamma_l
                 grads[str_beta] = dbeta_l
+                print grads[str_gamma].shape, grads[str_beta].shape
         else:
             for l in xrange(self.num_layers-1,0,-1):
                 #print 'l=',l
