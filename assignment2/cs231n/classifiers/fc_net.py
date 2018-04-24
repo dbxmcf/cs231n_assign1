@@ -403,8 +403,10 @@ class FullyConnectedNet(object):
     
         for l in xrange(self.num_layers-1,0,-1):
             if self.use_dropout:
+                # because we did not use combined layer with dropout, so 
+                # here need to update the cache[l-1] and da_l to be used with next layers
                 cache[l-1], cache_dropout = cache[l-1]
-                da_l = dropout_backward(da_l, cache_dropout)
+                da_l = dropout_backward(da_l, cache_dropout) 
             strW, strb = 'W' + str(l), 'b' + str(l)
             if self.use_batchnorm:
                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
