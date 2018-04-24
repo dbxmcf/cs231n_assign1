@@ -332,6 +332,7 @@ class FullyConnectedNet(object):
         #a1, cache1 = affine_relu_forward(X, W1, b1)
         #scores, cache2 = affine_forward(a1, W2, b2)
         
+        #FIXME: might change this to a dictionary???
         W =[]
         b =[]
         h =[]
@@ -348,8 +349,6 @@ class FullyConnectedNet(object):
             if self.use_batchnorm:
                 gammal, betal = self.params[str_gamma], self.params[str_beta]
                 al, cachel = affine_bn_relu_forward(a[l-1], Wl, bl, gammal, betal, self.bn_params[l-1])
-                #gamma_list.append(gammal)
-                #beta_list.append(betal)
             else:
                 al, cachel = affine_relu_forward(a[l-1], Wl, bl)
             # adding dropout layer
@@ -401,32 +400,11 @@ class FullyConnectedNet(object):
         da_l,dW_l,db_l = affine_backward(dscores, cachel)
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
-        
-#         if self.use_batchnorm:
-#             for l in xrange(self.num_layers-1,0,-1):
-#                 #print 'l=',l
-#                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
-#                 strW, strb = 'W' + str(l), 'b' + str(l)
-#                 str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
-#                 grads[strW] = dW_l + reg*W[l-1]
-#                 grads[strb] = db_l
-#                 #print str_gamma, str_beta
-#                 grads[str_gamma] = dgamma_l
-#                 grads[str_beta] = dbeta_l
-#                 #print grads[str_gamma].shape, grads[str_beta].shape
-#         else:
-#             for l in xrange(self.num_layers-1,0,-1):
-#                 #print 'l=',l
-#                 da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
-#                 strW, strb = 'W' + str(l), 'b' + str(l)
-#                 grads[strW] = dW_l + reg*W[l-1]
-#                 grads[strb] = db_l
-        
+    
         for l in xrange(self.num_layers-1,0,-1):
             if self.use_dropout:
                 cache[l-1], cache_dropout = cache[l-1]
                 da_l = dropout_backward(da_l, cache_dropout)
-                #pass
             strW, strb = 'W' + str(l), 'b' + str(l)
             if self.use_batchnorm:
                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
