@@ -35,6 +35,37 @@ def affine_bn_relu_backward(dout, cache):
     dx, dw, db = affine_backward(da, fc_cache)
     return dx, dw, db, dgamma, dbeta
 
+def affine_bn_relu_dropout_forward(x, w, b, gamma, beta, bn_param, dropout_param):
+    """
+        Convenience layer that perorms an affine transform followed by a ReLU
+
+        Inputs:
+        - x: Input to the affine layer
+        - w, b: Weights for the affine layer
+        - gamma, beta: params for the bn layer
+
+        Returns a tuple of:
+        - out: Output from the ReLU
+        - cache: Object to give to the backward pass
+    """
+    a, fc_cache = affine_forward(x, w, b)
+    an, bn_cache = batchnorm_forward(a, gamma, beta, bn_param)
+    anr, relu_cache = relu_forward(an)
+    out, dropout_cache = dropout_forward(anr, dropout_param)
+    cache = (fc_cache, bn_cache, relu_cache, dropout_cache)
+    return out, cache
+
+def affine_bn_relu_dropout_backward(dout, cache):
+    """
+        Backward pass for the affine-relu convenience layer
+    """
+    fc_cache, bn_cache, relu_cache, dropout_cache = cache
+    danr = dropout_backward(dout, dropout_cache)
+    dan = relu_backward(danr, relu_cache)
+    da, dgamma, dbeta = batchnorm_backward(dan, bn_cache)
+    dx, dw, db = affine_backward(da, fc_cache)
+    return dx, dw, db, dgamma, dbeta
+
 class TwoLayerNet(object):
     """
     A two-layer fully-connected neural network with ReLU nonlinearity and
@@ -301,52 +332,40 @@ class FullyConnectedNet(object):
         #a1, cache1 = affine_relu_forward(X, W1, b1)
         #scores, cache2 = affine_forward(a1, W2, b2)
         
+        #FIXME: might change this to a dictionary???
         W =[]
         b =[]
         h =[]
         a =[]
-        gamma_list = []
-        beta_list = []
+
         cache =[]
         a.append(X)
-        if self.use_batchnorm:
-            #print self.bn_params
-            for l in xrange(1,self.num_layers):
-                #print "l=",l
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
-                Wl, bl = self.params[strW], self.params[strb]
+
+        for l in xrange(1,self.num_layers):
+            #print "l=",l
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
+            Wl, bl = self.params[strW], self.params[strb]
+            if self.use_batchnorm:
                 gammal, betal = self.params[str_gamma], self.params[str_beta]
-                #print gammal, betal, 
-                #print bn_param[l]
                 al, cachel = affine_bn_relu_forward(a[l-1], Wl, bl, gammal, betal, self.bn_params[l-1])
-                W.append(Wl)
-                b.append(bl)
-                a.append(al)
-                gamma_list.append(gammal)
-                beta_list.append(betal)
-                cache.append(cachel)
-        else:
-            for l in xrange(1,self.num_layers):
-                #print "l=",l
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                Wl, bl = self.params[strW], self.params[strb]
+            else:
                 al, cachel = affine_relu_forward(a[l-1], Wl, bl)
-                W.append(Wl)
-                b.append(bl)
-                a.append(al)
-                cache.append(cachel)
-                #print strW, strb, al.shape
-        #print "self.num_layers",self.num_layers
+            # adding dropout layer
+            if self.use_dropout:
+                al, cache_dropout = dropout_forward(al, self.dropout_param)
+                cachel = (cachel, cache_dropout)
+            W.append(Wl)
+            b.append(bl)
+            a.append(al)
+            cache.append(cachel)
+
         #last layer
         strW, strb = 'W' + str(self.num_layers), 'b' + str(self.num_layers)
         Wf, bf = self.params[strW], self.params[strb]
         W.append(Wf)
         b.append(bf)
-        #print Wf.shape, bf.shape
         scores, cachel = affine_forward(a[self.num_layers-1], Wf, bf)
-        #cache.append(cache_l)
-        #print scores.shape
         #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -381,27 +400,23 @@ class FullyConnectedNet(object):
         da_l,dW_l,db_l = affine_backward(dscores, cachel)
         grads[strW] = dW_l + reg*Wf
         grads[strb] = db_l
-        
-        if self.use_batchnorm:
-            for l in xrange(self.num_layers-1,0,-1):
-                #print 'l=',l
+    
+        for l in xrange(self.num_layers-1,0,-1):
+            if self.use_dropout:
+                # because we did not use combined layer with dropout, so 
+                # here need to update the cache[l-1] and da_l to be used with next layers
+                cache[l-1], cache_dropout = cache[l-1]
+                da_l = dropout_backward(da_l, cache_dropout) 
+            strW, strb = 'W' + str(l), 'b' + str(l)
+            if self.use_batchnorm:
                 da_l,dW_l,db_l,dgamma_l,dbeta_l = affine_bn_relu_backward(da_l, cache[l-1])
-                strW, strb = 'W' + str(l), 'b' + str(l)
                 str_gamma, str_beta = 'gamma' + str(l), 'beta' + str(l)
-                grads[strW] = dW_l + reg*W[l-1]
-                grads[strb] = db_l
-                #print str_gamma, str_beta
                 grads[str_gamma] = dgamma_l
                 grads[str_beta] = dbeta_l
-                #print grads[str_gamma].shape, grads[str_beta].shape
-        else:
-            for l in xrange(self.num_layers-1,0,-1):
-                #print 'l=',l
+            else:
                 da_l,dW_l,db_l = affine_relu_backward(da_l, cache[l-1])
-                strW, strb = 'W' + str(l), 'b' + str(l)
-                grads[strW] = dW_l + reg*W[l-1]
-                grads[strb] = db_l
-            
+            grads[strW] = dW_l + reg*W[l-1]
+            grads[strb] = db_l
 
         ############################################################################
         #                             END OF YOUR CODE                             #
