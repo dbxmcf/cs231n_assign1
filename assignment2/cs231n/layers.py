@@ -425,18 +425,38 @@ def conv_forward_naive(x, w, b, conv_param):
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
     stride = conv_param['stride']
+    print("stride=%d" % (stride))
     pad = conv_param['pad']
-    H = x.shape[-2]
-    W = x.shape[-1]
+    npad = ((0, 0),(0, 0),(pad, pad), (pad, pad))
+    xp = np.pad(x, pad_width=npad, mode='constant', constant_values=0)
+    H  = x.shape[-2]
+    W  = x.shape[-1]
+    print("H=%d,W=%d" % (H,W))
+    #print(xp[0])
     HH = w.shape[-2]
     WW = w.shape[-1]
-    xf = x.flatten()
-    wf = w.flatten()
-    outf = xf.dot(wf) + b
+    print("HH=%d,WW=%d" % (HH,WW))
+    
+    #xf = xp.flatten()
+    #wf = w.flatten()
+    #outf = xf.dot(wf) + b
+    N = x.shape[0]
+    F = w.shape[0]
+    print("N=%d,F=%d" % (N,F))
     Hout = 1 + (H + 2 * pad - HH) / stride
     Wout = 1 + (W + 2 * pad - WW) / stride
-    outf.reshape(Hout,Wout)
-    #pass
+    print("Hout=%d,Wout=%d" % (Hout,Wout))
+    
+    
+    out = np.zeros((N, F, Hout, Wout))
+    for n in range(N):
+        for f in range(F):
+            for i in range(Hout):
+                for j in range(Wout):
+                    #print(b.shape)
+                    #print(w[f,:,:,:].shape)
+                    out[n,f,i,j] = np.sum(xp[n,:,i:i+WW,j:j+HH]*w[f,:,:,:]) + b[f]
+            #pass
     
     ###########################################################################
     #                             END OF YOUR CODE                            #
