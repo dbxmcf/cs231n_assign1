@@ -425,41 +425,46 @@ def conv_forward_naive(x, w, b, conv_param):
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
     stride = conv_param['stride']
-    print("stride=%d" % (stride))
+    #print("stride=%d" % (stride))
     pad = conv_param['pad']
     npad = ((0, 0),(0, 0),(pad, pad), (pad, pad))
     xp = np.pad(x, pad_width=npad, mode='constant', constant_values=0)
     H  = x.shape[-2]
     W  = x.shape[-1]
-    print("H=%d,W=%d" % (H,W))
+    #print("H=%d,W=%d" % (H,W))
     #print(xp[0])
     HH = w.shape[-2]
     WW = w.shape[-1]
-    print("HH=%d,WW=%d" % (HH,WW))
+    #print("HH=%d,WW=%d" % (HH,WW))
     
     #xf = xp.flatten()
     #wf = w.flatten()
     #outf = xf.dot(wf) + b
     N = x.shape[0]
     F = w.shape[0]
-    print("N=%d,F=%d" % (N,F))
+    #print("N=%d,F=%d" % (N,F))
     Hout = 1 + (H + 2 * pad - HH) / stride
     Wout = 1 + (W + 2 * pad - WW) / stride
-    print("Hout=%d,Wout=%d" % (Hout,Wout))
-    
-    
+    #print("Hout=%d,Wout=%d" % (Hout,Wout))
+        
     out = np.zeros((N, F, Hout, Wout))
+    #for n in np.arange(N):
+    #    for f in np.arange(F):
+    #        for i in np.arange(Hout):
+    #            for j in np.arange(Wout):
+    #                #print("i=%d,j=%d" % (i,j))
+    #                #print(b.shape)
+    #                #print(w[f,:,:,:].shape)
+    #                out[n,f,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
+    #                             * w[f,:,:,:]) + b[f]
     for n in np.arange(N):
-        for f in np.arange(F):
-            for i in np.arange(Hout):
-                for j in np.arange(Wout):
-                    #print("i=%d,j=%d" % (i,j))
-                    #print(b.shape)
-                    #print(w[f,:,:,:].shape)
-                    out[n,f,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
-                                 * w[f,:,:,:]) + b[f]
-            #pass
-    
+        for i in np.arange(Hout):
+            for j in np.arange(Wout):
+                #print(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW].shape)
+                #print(w.shape)
+                #print(out[n,:,i,j]).shape
+                out[n,:,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
+                                      * w,axis=(1,2,3)) + b
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
