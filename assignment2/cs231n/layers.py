@@ -449,13 +449,15 @@ def conv_forward_naive(x, w, b, conv_param):
     
     
     out = np.zeros((N, F, Hout, Wout))
-    for n in range(N):
-        for f in range(F):
-            for i in range(Hout):
-                for j in range(Wout):
+    for n in np.arange(N):
+        for f in np.arange(F):
+            for i in np.arange(Hout):
+                for j in np.arange(Wout):
+                    #print("i=%d,j=%d" % (i,j))
                     #print(b.shape)
                     #print(w[f,:,:,:].shape)
-                    out[n,f,i,j] = np.sum(xp[n,:,i:i+WW,j:j+HH]*w[f,:,:,:]) + b[f]
+                    out[n,f,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
+                                 * w[f,:,:,:]) + b[f]
             #pass
     
     ###########################################################################
