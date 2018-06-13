@@ -448,6 +448,7 @@ def conv_forward_naive(x, w, b, conv_param):
     #print("Hout=%d,Wout=%d" % (Hout,Wout))
         
     out = np.zeros((N, F, Hout, Wout))
+    # All loop solution
     #for n in np.arange(N):
     #    for f in np.arange(F):
     #        for i in np.arange(Hout):
@@ -460,9 +461,6 @@ def conv_forward_naive(x, w, b, conv_param):
     for n in np.arange(N):
         for i in np.arange(Hout):
             for j in np.arange(Wout):
-                #print(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW].shape)
-                #print(w.shape)
-                #print(out[n,:,i,j]).shape
                 out[n,:,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
                                       * w,axis=(1,2,3)) + b
     ###########################################################################
