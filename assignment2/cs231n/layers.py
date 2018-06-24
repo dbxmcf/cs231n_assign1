@@ -463,6 +463,7 @@ def conv_forward_naive(x, w, b, conv_param):
             for j in np.arange(Wout):
                 out[n,:,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
                                       * w,axis=(1,2,3)) + b
+    #x = xp
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -487,7 +488,43 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+    (x, w, b, conv_param) = cache
+    print("x.shape=",x.shape)
+    print("w.shape=",w.shape)
+    print("dout.shape=",dout.shape)
+    #out = np.zeros((N, F, Hout, Wout))
+    N, F, Hout, Wout = dout.shape[0],dout.shape[1],dout.shape[2],dout.shape[3]
+    dx = np.zeros_like(x)
+    dw = np.zeros_like(w)
+    db = np.zeros_like(b)
+    
+    stride = conv_param['stride']
+    pad = conv_param['pad']
+    npad = ((0, 0),(0, 0),(pad, pad), (pad, pad))
+    print("pad=",pad)
+    dxp = np.pad(dx, pad_width=npad, mode='constant', constant_values=0)
+    H  = x.shape[-2]
+    W  = x.shape[-1]
+    #print("H=%d,W=%d" % (H,W))
+    #print(xp[0])
+    HH = w.shape[-2]
+    WW = w.shape[-1]
+    for n in np.arange(N):
+        for i in np.arange(Hout):
+            for j in np.arange(Wout):
+                for f in np.arange(F):
+                #out[n,:,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
+                #                      * w,axis=(1,2,3)) + b
+                #print(dxp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW].shape)
+                #print(w.shape)
+                #print(w.sum(axis=0).shape)
+                    dxp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW] += dout[n,f,i,j]*w[f, :, :, :]
+                    #dxp[n,f,stride*i:stride*i+HH,stride*j:stride*j+WW] += w[f,:,:,:]
+    #dxp = dout*dxp
+    dx = dxp[:,:,pad:-pad,pad:-pad]
+    #dx = dout*dx
+    print("dx.shape=",dx.shape)
+    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
