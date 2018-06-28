@@ -489,9 +489,9 @@ def conv_backward_naive(dout, cache):
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
     (x, w, b, conv_param) = cache
-    print("x.shape=",x.shape)
-    print("w.shape=",w.shape)
-    print("dout.shape=",dout.shape)
+    #print("x.shape=",x.shape)
+    #print("w.shape=",w.shape)
+    #print("dout.shape=",dout.shape)
     #out = np.zeros((N, F, Hout, Wout))
     N, F, Hout, Wout = dout.shape[0],dout.shape[1],dout.shape[2],dout.shape[3]
     dx = np.zeros_like(x)
@@ -501,7 +501,7 @@ def conv_backward_naive(dout, cache):
     stride = conv_param['stride']
     pad = conv_param['pad']
     npad = ((0, 0),(0, 0),(pad, pad), (pad, pad))
-    print("pad=",pad)
+    #print("pad=",pad)
     xp  = np.pad( x, pad_width=npad, mode='constant', constant_values=0)
     dxp = np.pad(dx, pad_width=npad, mode='constant', constant_values=0)
     H  = x.shape[-2]
@@ -514,20 +514,10 @@ def conv_backward_naive(dout, cache):
         for i in np.arange(Hout):
             for j in np.arange(Wout):
                 for f in np.arange(F):
-                #out[n,:,i,j] = np.sum(xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
-                #                      * w,axis=(1,2,3)) + b
-                #print(dxp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW].shape)
-                #print(w.shape)
-                #print(w.sum(axis=0).shape)
                     dxp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW] += dout[n,f,i,j]*w[f, :, :, :]
                     dw[f,:,:,:] += dout[n,f,i,j]*xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
                     db[f] += dout[n,f,i,j] #*1.0
-    #dxp = dout*dxp
     dx = dxp[:,:,pad:-pad,pad:-pad]
-    #dw *= 1.0/N
-    #dx = dout*dx
-    #print("dx.shape=",dx.shape)
-    #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
