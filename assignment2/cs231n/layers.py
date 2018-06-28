@@ -502,6 +502,7 @@ def conv_backward_naive(dout, cache):
     pad = conv_param['pad']
     npad = ((0, 0),(0, 0),(pad, pad), (pad, pad))
     print("pad=",pad)
+    xp  = np.pad( x, pad_width=npad, mode='constant', constant_values=0)
     dxp = np.pad(dx, pad_width=npad, mode='constant', constant_values=0)
     H  = x.shape[-2]
     W  = x.shape[-1]
@@ -519,11 +520,13 @@ def conv_backward_naive(dout, cache):
                 #print(w.shape)
                 #print(w.sum(axis=0).shape)
                     dxp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW] += dout[n,f,i,j]*w[f, :, :, :]
-                    #dxp[n,f,stride*i:stride*i+HH,stride*j:stride*j+WW] += w[f,:,:,:]
+                    dw[f,:,:,:] += dout[n,f,i,j]*xp[n,:,stride*i:stride*i+HH,stride*j:stride*j+WW]
+                    db[f] += dout[n,f,i,j] #*1.0
     #dxp = dout*dxp
     dx = dxp[:,:,pad:-pad,pad:-pad]
+    #dw *= 1.0/N
     #dx = dout*dx
-    print("dx.shape=",dx.shape)
+    #print("dx.shape=",dx.shape)
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
