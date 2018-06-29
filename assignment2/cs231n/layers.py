@@ -554,8 +554,11 @@ def max_pool_forward_naive(x, pool_param):
     
     Hout = 1 + (H - PH) / S
     Wout = 1 + (W - PW) / S
-    
+
     out = np.zeros((N,C,Hout,Wout))
+    for n in np.arange(N):
+        for i in np.arange():
+            out[n,:,S*i:S*i+PH,S*j:S*j+PW] =  
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
