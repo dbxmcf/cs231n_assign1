@@ -547,8 +547,8 @@ def max_pool_forward_naive(x, pool_param):
     PW = pool_param['pool_width']
     S = pool_param['stride']
     
-    H = x.shape[-2]
-    W = x.shape[-1]
+    H = x.shape[2]
+    W = x.shape[3]
     C = x.shape[1]
     N = x.shape[0]
     
@@ -557,9 +557,12 @@ def max_pool_forward_naive(x, pool_param):
 
     out = np.zeros((N,C,Hout,Wout))
     for n in np.arange(N):
-        for i in np.arange():
-            out[n,:,S*i:S*i+PH,S*j:S*j+PW] =  
+        for c in np.arange(C):
+            for i in np.arange(Hout):
+                for j in np.arange(Wout):
+                    out[n,c,i,j] = np.max(x[n,c,S*i:S*i+PH,S*j:S*j+PW])
     #pass
+    #print(out)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
