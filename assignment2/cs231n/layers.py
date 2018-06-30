@@ -610,7 +610,7 @@ def max_pool_backward_naive(dout, cache):
                     idx = np.unravel_index(a.argmax(), a.shape)
                     #print(a.shape)
                     #print(idx)
-                    dx[n,c,S*i:S*i+PH,S*j:S*j+PW][idx[0],idx[1]] += dout[n,c,i,j]#1.0
+                    dx[n,c,S*i:S*i+PH,S*j:S*j+PW][idx] += dout[n,c,i,j]#1.0
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
