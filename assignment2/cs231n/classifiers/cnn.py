@@ -48,7 +48,35 @@ class ThreeLayerConvNet(object):
         # hidden affine layer, and keys 'W3' and 'b3' for the weights and biases   #
         # of the output affine layer.                                              #
         ############################################################################
-        pass
+        # w: Filter weights of shape (F, C, HH, WW)
+        # C = input_dim[0]
+        self.params['W1'] = weight_scale * np.random.randn(num_filters, input_dim[0], filter_size, filter_size)
+        self.params['b1'] = np.zeros(num_filters)
+        Hout, Wout = input_dim[1], input_dim[2]
+        indim_W2 = num_filters*Hout*Wout
+        self.params['W2'] = weight_scale * np.random.randn(indim_W2,hidden_dim)
+        self.params['b2'] = np.zeros(hidden_dim)
+        self.params['W3'] = weight_scale * np.random.randn(hidden_dim,num_classes)
+        self.params['b3'] = np.zeros(num_classes)
+        #pass
+        #in_dims = [input_dim] + hidden_dim
+        #out_dims = hidden_dim + [num_classes]
+        #all_dims = [input_dim] + hidden_dims + [num_classes]
+        #for idx,(in_dim,out_dim) in enumerate(zip(in_dims,out_dims)):
+        #    strW = 'W' + str(idx+1)
+        #    strb = 'b' + str(idx+1)
+        #    
+        #    #out_dim = all_dims[idx+1]
+        #    self.params[strW] = weight_scale * np.random.randn(in_dim, out_dim)
+        #    self.params[strb] = np.zeros(out_dim)
+        #    #print strW, strb, self.params[strW].shape, self.params[strb].shape
+        #    # last layer does not have gamma and beta
+        #    if self.use_batchnorm and (idx < self.num_layers-1):
+        #        str_gamma = 'gamma' + str(idx+1)
+        #        str_beta = 'beta' + str(idx+1)
+        #        #print str_gamma, str_beta
+        #        self.params[str_gamma] = np.ones(out_dim)
+        #        self.params[str_beta]  = np.zeros(out_dim)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -80,7 +108,7 @@ class ThreeLayerConvNet(object):
         # computing the class scores for X and storing them in the scores          #
         # variable.                                                                #
         ############################################################################
-        pass
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
