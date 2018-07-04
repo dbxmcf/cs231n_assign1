@@ -686,15 +686,14 @@ def spatial_batchnorm_backward(dout, cache):
     # be very short; ours is less than five lines.                            #
     ###########################################################################
     dx, dgamma, dbeta = np.zeros_like(dout), np.zeros(dout.shape[1]), np.zeros(dout.shape[1])
-    #print(dgamma.shape)
+    # all loop solution
     for c in np.arange(dout.shape[1]):
         dout_c = dout[:,c,:,:].reshape(dout.shape[0],-1)
-        #print(dout_c.shape)
-        #dx_c, dgamma[c], dbeta[c] = batchnorm_backward(dout_c, cache[c])
         dx_c, dg, db = batchnorm_backward(dout_c, cache[c])
-        #print(dg)
         dx[:,c,:,:] = dx_c.reshape(dx[:,c,:,:].shape)
         dgamma[c], dbeta[c] = np.sum(dg), np.sum(db)
+    #dout_t = dout.transpose(1,0,2,3).reshape(dout.shape[
+    
     #pass
     ###########################################################################
     #                             END OF YOUR CODE                            #
