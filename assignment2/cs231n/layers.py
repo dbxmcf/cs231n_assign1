@@ -700,9 +700,11 @@ def spatial_batchnorm_backward(dout, cache):
     #    dx[:,c,:,:] = dx_c.reshape(dx[:,c,:,:].shape)
     #    dgamma[c], dbeta[c] = np.sum(dg), np.sum(db)
     
-    dout_t = dout.transpose(1,0,2,3).reshape(dout.shape[1],-1)
-    #print(dout_t.shape)
-    #dx_c, dgamma, dbeta = batchnorm_backward(dout_t, cache)
+    # no loop version
+    dout_t = dout.transpose(0,2,3,1).reshape(-1,dout.shape[1])
+    dx_t, dgamma, dbeta = batchnorm_backward(dout_t, cache)
+    dx_t = dx_t.reshape(dout.shape[0],dout.shape[2],dout.shape[3],dout.shape[1])
+    dx = dx_t.transpose(0,3,1,2)
     
     #pass
     ###########################################################################
