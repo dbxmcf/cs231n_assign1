@@ -650,11 +650,18 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     # be very short; ours is less than five lines.                            #
     ###########################################################################
     #pass
-    out, cache = np.zeros_like(x), []
-    for c in np.arange(x.shape[1]):
-        out_c, cache_c = batchnorm_forward(x[:,c,:,:].reshape(x.shape[0],-1), gamma[c], beta[c], bn_param)
-        out[:,c,:,:]=out_c.reshape(x[:,c,:,:].shape)
-        cache.append(cache_c)
+    # all loop solution
+    #out, cache = np.zeros_like(x), []
+    #for c in np.arange(x.shape[1]):
+    #    out_c, cache_c = batchnorm_forward(x[:,c,:,:].reshape(x.shape[0],-1), gamma[c], beta[c], bn_param)
+    #    out[:,c,:,:]=out_c.reshape(x[:,c,:,:].shape)
+    #    cache.append(cache_c)
+    
+    # no loop solution
+    x_t = x.transpose(0,2,3,1).reshape(-1,x.shape[1])
+    out_t, cache = batchnorm_forward(x_t, gamma, beta, bn_param)
+    out_t = out_t.reshape(x.shape[0],x.shape[2],x.shape[3],x.shape[1])
+    out = out_t.transpose(0,3,1,2)
     
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -687,12 +694,15 @@ def spatial_batchnorm_backward(dout, cache):
     ###########################################################################
     dx, dgamma, dbeta = np.zeros_like(dout), np.zeros(dout.shape[1]), np.zeros(dout.shape[1])
     # all loop solution
-    for c in np.arange(dout.shape[1]):
-        dout_c = dout[:,c,:,:].reshape(dout.shape[0],-1)
-        dx_c, dg, db = batchnorm_backward(dout_c, cache[c])
-        dx[:,c,:,:] = dx_c.reshape(dx[:,c,:,:].shape)
-        dgamma[c], dbeta[c] = np.sum(dg), np.sum(db)
-    #dout_t = dout.transpose(1,0,2,3).reshape(dout.shape[
+    #for c in np.arange(dout.shape[1]):
+    #    dout_c = dout[:,c,:,:].reshape(dout.shape[0],-1)
+    #    dx_c, dg, db = batchnorm_backward(dout_c, cache[c])
+    #    dx[:,c,:,:] = dx_c.reshape(dx[:,c,:,:].shape)
+    #    dgamma[c], dbeta[c] = np.sum(dg), np.sum(db)
+    
+    dout_t = dout.transpose(1,0,2,3).reshape(dout.shape[1],-1)
+    #print(dout_t.shape)
+    #dx_c, dgamma, dbeta = batchnorm_backward(dout_t, cache)
     
     #pass
     ###########################################################################
