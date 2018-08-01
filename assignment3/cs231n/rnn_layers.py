@@ -70,11 +70,13 @@ def rnn_step_backward(dnext_h, cache):
     #dx, dprev_h, dWx, dWh, db = 
     #np.zeros_like(x), np.zeros_like(prev_h), np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)
     dtanh = 1.0 - next_h**2
-    dx = (dnext_h*dtanh).dot(Wx.T)
-    dprev_h = (dnext_h*dtanh).dot(Wh.T)
-    dWx = (x.T).dot(dnext_h*dtanh)
-    dWh = (prev_h.T).dot(dnext_h*dtanh)
-    db = np.sum(dnext_h*dtanh, axis=0)
+    dnext_h_m_dtanh = dnext_h*dtanh
+    
+    dx = dnext_h_m_dtanh.dot(Wx.T)
+    dprev_h = dnext_h_m_dtanh.dot(Wh.T)
+    dWx = (x.T).dot(dnext_h_m_dtanh)
+    dWh = (prev_h.T).dot(dnext_h_m_dtanh)
+    db = np.sum(dnext_h_m_dtanh, axis=0)
     # pass
     ##############################################################################
     #                               END OF YOUR CODE                             #
