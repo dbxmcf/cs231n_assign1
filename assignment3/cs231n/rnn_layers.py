@@ -67,7 +67,8 @@ def rnn_step_backward(dnext_h, cache):
     # of the output value from tanh.                                             #
     ##############################################################################
     next_h, x, prev_h, Wx, Wh, b = cache
-    dx, dprev_h, dWx, dWh, db = np.zeros_like(x), np.zeros_like(prev_h), np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)
+    #dx, dprev_h, dWx, dWh, db = 
+    #np.zeros_like(x), np.zeros_like(prev_h), np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)
     dtanh = 1.0 - next_h**2
     dx = (dnext_h*dtanh).dot(Wx.T)
     dprev_h = (dnext_h*dtanh).dot(Wh.T)
