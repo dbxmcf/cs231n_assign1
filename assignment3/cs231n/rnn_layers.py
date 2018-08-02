@@ -110,11 +110,14 @@ def rnn_forward(x, h0, Wx, Wh, b):
     ##############################################################################
     h = np.zeros((x.shape[0],x.shape[1],h0.shape[1]))
     #print(h.shape)
+    cache = []
+    prev_h = h0
     for i in np.arange(x.shape[1]):
         #print(x[:,i,:].shape)
         #print(h[:,i,:].shape)
-        h[:,i,:], _ = rnn_step_forward(x[:,i,:], h0, Wx, Wh, b)
-        h0 = h[:,i,:]
+        h[:,i,:], _ = rnn_step_forward(x[:,i,:], prev_h, Wx, Wh, b)
+        cache.append((h[:,i,:], x[:,i,:], prev_h, Wx, Wh, b))
+        prev_h = h[:,i,:]
     #print(h)
     #pass
     ##############################################################################
@@ -148,7 +151,8 @@ def rnn_backward(dh, cache):
     # sequence of data. You should use the rnn_step_backward function that you   #
     # defined above. You can use a for loop to help compute the backward pass.   #
     ##############################################################################
-    pass
+    #for 
+    # pass
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
