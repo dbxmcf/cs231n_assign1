@@ -112,12 +112,12 @@ def rnn_forward(x, h0, Wx, Wh, b):
     #print(h.shape)
     cache = []
     prev_h = h0
-    for i in np.arange(x.shape[1]):
+    for t in np.arange(x.shape[1]):
         #print(x[:,i,:].shape)
         #print(h[:,i,:].shape)
-        h[:,i,:], _ = rnn_step_forward(x[:,i,:], prev_h, Wx, Wh, b)
-        cache.append((h[:,i,:], x[:,i,:], prev_h, Wx, Wh, b))
-        prev_h = h[:,i,:]
+        h[:,t,:], cache_t = rnn_step_forward(x[:,t,:], prev_h, Wx, Wh, b)
+        cache.append((h[:,t,:], cache_t))
+        prev_h = h[:,t,:]
     #print(h)
     #pass
     ##############################################################################
@@ -151,7 +151,38 @@ def rnn_backward(dh, cache):
     # sequence of data. You should use the rnn_step_backward function that you   #
     # defined above. You can use a for loop to help compute the backward pass.   #
     ##############################################################################
-    #for 
+#     N = dh.shape[0]
+#     T = dh.shape[1]
+#     _, cache0 = cache[0]
+#     h0, x0, _, _, _, _ = cache0
+#     D = x0.shape[1]
+#     H = h0.shape[1]
+    #dx = np.zeros(dh.shape[0],T,dh.shape)
+    N, D, T, H = 2, 3, 10, 5
+    dWx = np.zeros((D,H))
+    #print(dWx.shape)
+    dWh = np.zeros((H,H))
+    db = np.zeros((H))
+#    for t in reversed(np.arange(T)):
+        
+        #print(t)
+#     for t in np.arange(T-1,0,-1):
+#         print(t)
+#         ht, cache_t = cache[t]
+#         #dxt_s, dprev_h_s, dWx_s, dWh_s, db_s = rnn_step_backward(dht, cache_t)
+#         dht = dh[:,t,:]
+#         dxt, dprev_ht, dWxs, dWhs, dbs = rnn_step_backward(dht, cache_t)
+#         #dxt = dht * dprev_h_s
+#         dWx += dWxs
+#         dWh += dWhs
+#         db += dbs
+        #dprev_h = dht * dprev_h
+        #dh0 = dprev_ht
+
+    #rnn_step_backward(dnext_h, cache)
+    #for i in 
+    #    dx, dprev_h, dWx, dWh, db = dh[:,i,:] * rnn_step_backward(dnext_h, cache)
+    #    dh0 = 
     # pass
     ##############################################################################
     #                               END OF YOUR CODE                             #
