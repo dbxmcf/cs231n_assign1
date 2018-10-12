@@ -69,7 +69,7 @@ def rnn_step_backward(dnext_h, cache):
     next_h, x, prev_h, Wx, Wh, b = cache
     #dx, dprev_h, dWx, dWh, db = 
     #np.zeros_like(x), np.zeros_like(prev_h), np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)
-    dtanh = 1.0 - next_h**2
+    dtanh = 1.0 - next_h*next_h
     dnext_h_m_dtanh = dnext_h*dtanh
     
     dx = dnext_h_m_dtanh.dot(Wx.T)
@@ -169,18 +169,19 @@ def rnn_backward(dh, cache):
     db = np.zeros((H))
     
     #print(dh.shape)
+    dh_next = np.zeros_like(dh0)
     for t in reversed(np.arange(T)):
-        #ht, cache_t = cache[t]
-        dx_t, dprev_h_t, dWx_t, dWh_t, db_t = rnn_step_backward(dh[:,t,:], cache[t])
+        dht = dh[:,t,:] + dh_next
+        dx_t, dprev_h_t, dWx_t, dWh_t, db_t = rnn_step_backward(dht, cache[t])
         dWx += dWx_t
+        #print(dWh.shape)
+        #print(dWh_t.shape)
         dWh += dWh_t
-        dx[:,t,:] = dx_t
+        dx[:,t,:] += dx_t
         db += db_t
-        #dh0 +=
-
-        #dx = 
-        #print(t)
-        #dWx += dh[:,t,:]*dWx_t
+        h_next, _, _, _, Wh, _ = cache[t]
+        dh_raw = (1.0-h_next*h_next)*dht
+        dh_next = (dh_raw).dot(Wh.T)
         
     dh0 = dprev_h_t
     ##############################################################################
