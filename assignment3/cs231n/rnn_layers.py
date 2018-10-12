@@ -174,8 +174,6 @@ def rnn_backward(dh, cache):
         dht = dh[:,t,:] + dh_next
         dx_t, dprev_h_t, dWx_t, dWh_t, db_t = rnn_step_backward(dht, cache[t])
         dWx += dWx_t
-        #print(dWh.shape)
-        #print(dWh_t.shape)
         dWh += dWh_t
         dx[:,t,:] += dx_t
         db += db_t
