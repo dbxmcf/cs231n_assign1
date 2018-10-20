@@ -238,19 +238,18 @@ def word_embedding_backward(dout, cache):
     ##############################################################################
     x, W = cache
     dW = np.zeros_like(W)
-    N = x.shape[0]
-    T = x.shape[1]
-    D = W.shape[1]
+    #N = x.shape[0]
+    #T = x.shape[1]
+    #D = W.shape[1]
     #print(N,T,D)
-    for n in np.arange(N):
-        for t in np.arange(T):
-            for d in np.arange(D):
-                dW[x[n,t],d] += dout[n,t,d]
-    #np.add.at(dW, x, 1)
+    #for n in np.arange(N):
+    #    for t in np.arange(T):
+    #        for d in np.arange(D):
+    #            dW[x[n,t],d] += 1 # dout[n,t,d]
+
+    #np.add.at(dW,x,1)
+    np.add.at(dW, x, dout)
     #print(dW)
-    #dW = dout*dW
-    #print(x)
-    #print(W)
     #pass
     ##############################################################################
     #                               END OF YOUR CODE                             #
