@@ -140,7 +140,8 @@ class CaptioningRNN(object):
         # Note also that you are allowed to make use of functions from layers.py   #
         # in your implementation, if needed.                                       #
         ############################################################################
-        pass
+        
+        #pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
