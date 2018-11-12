@@ -220,29 +220,19 @@ class CaptioningRNN(object):
         # NOTE: we are still working over minibatches in this function. Also if   #
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
-        #print(captions.shape)
-        #print(captions)
-        print(W_proj.shape,b_proj.shape)
-        print(features.shape)
-        h0, _ = affine_forward(features, W_proj, b_proj)
-        print(h0.shape)
-        #x, _ = word_embedding_forward(captions, W_embed)
-        h = np.zeros((x.shape[0],x.shape[1],h0.shape[1]))
-        #print(h.shape)
-        #cache = []
-        T = x.shape[1]
-        prev_h = h0
-        for t in np.arange(T):
-            h[:,t,:], cache_t = rnn_step_forward(x[:,t,:], prev_h, Wx, Wh, b)
-            #score, score_cache = affine_forward(h[:,t,:], W_vocab, b_vocab)
-            #cache.append(cache_t)
-            
-            prev_h = h[:,t,:]
-#         x, cache_x = word_embedding_forward(captions_in, W_embed)
-#         if (self.cell_type == 'rnn'):
-#             h, cache_h = rnn_forward(x, h0, Wx, Wh, b)
-#         score, score_cache = temporal_affine_forward(h, W_vocab, b_vocab)
-        #pass
+        
+        prev_h, _ = affine_forward(features, W_proj, b_proj)
+        x_t, _ = word_embedding_forward(self._start, W_embed)
+        T = captions.shape[1]
+
+        if (self.cell_type == 'rnn'):
+            for t in np.arange(T):
+                h_t, _ = rnn_step_forward(x_t, prev_h, Wx, Wh, b)
+                score_t, _ = affine_forward(h_t, W_vocab, b_vocab)
+                captions[:,t] = np.argmax(score_t,axis=1)
+                x_t, _ = word_embedding_forward(captions[:,t], W_embed)
+                prev_h = h_t
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
