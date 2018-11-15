@@ -140,7 +140,22 @@ class CaptioningRNN(object):
         # Note also that you are allowed to make use of functions from layers.py   #
         # in your implementation, if needed.                                       #
         ############################################################################
-        pass
+        # fwd pass
+        h0, cache_h0 = affine_forward(features, W_proj, b_proj)
+        x, cache_x = word_embedding_forward(captions_in, W_embed)
+        if (self.cell_type == 'rnn'):
+            h, cache_h = rnn_forward(x, h0, Wx, Wh, b)
+        score, score_cache = temporal_affine_forward(h, W_vocab, b_vocab)
+        loss, dscore = temporal_softmax_loss(score, captions_out, mask, verbose=False)
+        
+        # bwd pass
+        
+        dh, grads['W_vocab'], grads['b_vocab'] = temporal_affine_backward(dscore, score_cache)
+        if (self.cell_type == 'rnn'):
+            dx, dh0, grads['Wx'], grads['Wh'], grads['b'] = rnn_backward(dh, cache_h)
+        grads['W_embed'] = word_embedding_backward(dx, cache_x)
+        _, grads['W_proj'], grads['b_proj'] = affine_backward(dh0, cache_h0)
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -205,7 +220,19 @@ class CaptioningRNN(object):
         # NOTE: we are still working over minibatches in this function. Also if   #
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
-        pass
+        
+        prev_h, _ = affine_forward(features, W_proj, b_proj)
+        x_t, _ = word_embedding_forward(self._start, W_embed)
+        T = captions.shape[1]
+
+        if (self.cell_type == 'rnn'):
+            for t in np.arange(T):
+                h_t, _ = rnn_step_forward(x_t, prev_h, Wx, Wh, b)
+                score_t, _ = affine_forward(h_t, W_vocab, b_vocab)
+                captions[:,t] = np.argmax(score_t,axis=1)
+                x_t, _ = word_embedding_forward(captions[:,t], W_embed)
+                prev_h = h_t
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
